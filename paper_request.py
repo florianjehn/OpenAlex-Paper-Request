@@ -325,7 +325,7 @@ if __name__ == "__main__":
     ]
     
     # Initialize the searcher with your email for the polite pool
-    searcher = OpenAlexSearch(email="florianjehn@posteo.de")
+    searcher = OpenAlexSearch(email="xtzbo96mr@mozmail.com")
     
     # Search for documents
     results = searcher.search_topics(
