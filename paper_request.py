@@ -3,13 +3,12 @@ import json
 import pandas as pd
 from datetime import datetime
 import time
-import argparse
 import os
 from tqdm import tqdm
 
 class OpenAlexSearch:
     """
-    A class to search for documents in OpenAlex based on topics and date range.
+    A class to search for documents in OpenAlex based on topics, keywords, and date range.
     Uses the OpenAlex API to perform searches and retrieve document metadata.
     """
     
@@ -48,6 +47,65 @@ class OpenAlexSearch:
         Returns:
             list: List of document dictionaries
         """
+        # Combine topics into a search query using OR operator
+        query = " OR ".join([f'"{topic}"' for topic in topics])
+        
+        # Perform the search using the generic search method
+        return self._search(query, start_date, end_date, max_results, filters, "topics")
+    
+    def search_keywords(self, keywords, start_date, end_date, max_results=None, filters=None, keyword_field='default'):
+        """
+        Search for documents containing specific keywords within a date range.
+        
+        Args:
+            keywords (list): List of keyword strings to search for
+            start_date (str): Start date in YYYY-MM-DD format
+            end_date (str): End date in YYYY-MM-DD format
+            max_results (int, optional): Maximum number of results to return
+            filters (dict, optional): Additional filters to apply
+            keyword_field (str, optional): Field to search in ('default', 'title', 'abstract', 'fulltext')
+                - 'default': Searches across titles, abstracts, and fulltext
+                - 'title': Searches only in titles
+                - 'abstract': Searches only in abstracts
+                - 'fulltext': Searches only in fulltext
+            
+        Returns:
+            list: List of document dictionaries
+        """
+        # Field-specific search - map user input to OpenAlex filter fields
+        field_map = {
+            'default': 'search',           # General search across all fields
+            'title': 'filter.title.search', # Title-specific search
+            'abstract': 'filter.abstract.search', # Abstract-specific search
+            'fulltext': 'filter.fulltext.search'  # Fulltext-specific search
+        }
+        
+        if keyword_field not in field_map:
+            raise ValueError(f"Invalid keyword_field: {keyword_field}. Must be one of {list(field_map.keys())}")
+        
+        # Combine keywords into a search query using OR operator
+        query = " OR ".join([f'"{keyword}"' for keyword in keywords])
+        
+        # Perform the search using the generic search method with field-specific parameters
+        return self._search(query, start_date, end_date, max_results, filters, "keywords", keyword_field, field_map[keyword_field])
+    
+    def _search(self, query, start_date, end_date, max_results=None, filters=None, search_type="topics", keyword_field=None, search_param="search"):
+        """
+        Generic search method used by both topic and keyword searches.
+        
+        Args:
+            query (str): Formatted search query
+            start_date (str): Start date in YYYY-MM-DD format
+            end_date (str): End date in YYYY-MM-DD format
+            max_results (int, optional): Maximum number of results to return
+            filters (dict, optional): Additional filters to apply
+            search_type (str): Type of search (topics or keywords) for logging
+            keyword_field (str, optional): Field being searched (for keyword searches)
+            search_param (str): API parameter to use for the search query
+            
+        Returns:
+            list: List of document dictionaries
+        """
         # Validate input dates
         try:
             datetime.strptime(start_date, '%Y-%m-%d')
@@ -55,16 +113,19 @@ class OpenAlexSearch:
         except ValueError:
             raise ValueError("Dates must be in YYYY-MM-DD format")
             
-        # Combine topics into a search query using OR operator
-        query = " OR ".join([f'"{topic}"' for topic in topics])
-        
         # Set up base parameters
         search_params = self.params.copy()
         search_params.update({
             "filter": f"from_publication_date:{start_date},to_publication_date:{end_date}",
-            "search": query,
             "per-page": 200  # Maximum allowed per page
         })
+        
+        # Add the search query to the appropriate parameter based on search type
+        if search_param == "search":
+            search_params[search_param] = query
+        else:
+            # For field-specific searches like title.search, abstract.search, etc.
+            search_params[search_param] = query
         
         # Add any additional filters
         if filters:
@@ -77,7 +138,12 @@ class OpenAlexSearch:
         page = 1
         total_results = float('inf')  # Initially unknown
         
+        search_desc = f"{search_type} search"
+        if keyword_field and search_type == "keywords":
+            search_desc = f"keywords search in {keyword_field}"
+        
         print(f"Searching OpenAlex for: {query}")
+        print(f"Search type: {search_desc}")
         print(f"Date range: {start_date} to {end_date}")
         
         with tqdm(desc="Retrieving results", unit="docs") as pbar:
@@ -247,6 +313,7 @@ class OpenAlexSearch:
         Args:
             documents (list or DataFrame): Documents to save
             filepath (str): Path to save file
+            exclude_words (list, optional): Words to exclude from results (filtering by title)
             format (str): Format to save ('csv', 'excel', or 'json')
         """
         # Convert to DataFrame if needed
@@ -255,8 +322,8 @@ class OpenAlexSearch:
         else:
             df = documents
 
-        # if exclude_words != none remove all documents which have any of the excluded words in their title
-        if exclude_words != None:
+        # If exclude_words != None remove all documents which have any of the excluded words in their title
+        if exclude_words is not None:
             df = filter_dataframe(df, exclude_words)                
         
         # Create directory if it doesn't exist
@@ -318,25 +385,62 @@ if __name__ == "__main__":
         "Global Catastrophic Risk", 
         "Societal Collapse", 
         "Nuclear War", 
-        "Supervolcanic eruption",
-        "Resilience global catastrophe", 
         "Social amplification of risk", 
-        #"Existential risk"
+        "Nuclear Issues and Defense",
+        "Supply Chain Resilience and risk management",
+        "Climate Change and geoengineering",
+        "Agricultural risk and resilience",
+        "Infrastructure resilience and vulnerability analysis",
+        "Complex systems and decision making",
+        "Global Peace and Security Dynamics",
+        "Influence of Climate on Human Conflict",
+        "Disaster Management and Resilience",
+        "Evolutionary Game Theory and cooperation",
+        "World Systems and global transformation",
+        "Culture, economy, and development studies",
+        "Historical economic and social studies",
+        "Military and defense studies",
+        "Military history and strategy",
+        "Political conflict and governance",
+    ]
+    
+    # Define your keywords of interest
+    catastrophic_risk_keywords = [
+        "global catastrophic risk",
+        "nuclear winter",
+        "civilization collapse",
+        "societal collapse",
+        "historical collapse",
+
+
     ]
     
     # Initialize the searcher with your email for the polite pool
     searcher = OpenAlexSearch(email="xtzbo96mr@mozmail.com")
     
-    # Search for documents
-    results = searcher.search_topics(
+    start_date = "2025-01-01"
+    end_date = "2025-04-01"
+
+    # Search for documents by topic
+    topic_results = searcher.search_topics(
         topics=catastrophic_risk_topics,
-        start_date="2025-01-01",
-        end_date="2025-03-20",
-        max_results=500
+        start_date=start_date,
+        end_date=end_date,
+        max_results=300
     )
     
+    # Search for documents by keyword (in all fields)
+    keyword_results = searcher.search_keywords(
+        keywords=catastrophic_risk_keywords,
+        start_date=start_date,
+        end_date=end_date,
+        max_results=200
+    )
+
     # Convert to DataFrame for analysis
-    results_df = searcher.extract_key_metadata(results)
+    topic_df = searcher.extract_key_metadata(topic_results)
+    keyword_df = searcher.extract_key_metadata(keyword_results)
     
     # Save results
-    searcher.save_results(results_df, "catastrophic_risk_research.csv", exclude_words=[" AI ", "Artificial Intelligence", " AI", "AI "])
+    searcher.save_results(topic_df, "catastrophic_risk_topic_research.csv", exclude_words=[" AI ", "Artificial Intelligence", " AI", "AI "])
+    searcher.save_results(keyword_df, "catastrophic_risk_keyword_research.csv", exclude_words=[" AI ", "Artificial Intelligence", " AI", "AI "])
