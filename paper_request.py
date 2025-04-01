@@ -418,8 +418,8 @@ if __name__ == "__main__":
     # Initialize the searcher with your email for the polite pool
     searcher = OpenAlexSearch(email="xtzbo96mr@mozmail.com")
     
-    start_date = "2025-01-01"
-    end_date = "2025-04-01"
+    start_date = "2024-10-01"
+    end_date = "2024-12-01"
 
     # Search for documents by topic
     topic_results = searcher.search_topics(
@@ -440,7 +440,11 @@ if __name__ == "__main__":
     # Convert to DataFrame for analysis
     topic_df = searcher.extract_key_metadata(topic_results)
     keyword_df = searcher.extract_key_metadata(keyword_results)
-    
+
+    # Combine the two DataFrames
+    combined_df = pd.concat([topic_df, keyword_df], ignore_index=True)
+    combined_df.drop_duplicates(subset=['id'], inplace=True)
+    combined_df.reset_index(drop=True, inplace=True)
+ 
     # Save results
-    searcher.save_results(topic_df, "catastrophic_risk_topic_research.csv", exclude_words=[" AI ", "Artificial Intelligence", " AI", "AI "])
-    searcher.save_results(keyword_df, "catastrophic_risk_keyword_research.csv", exclude_words=[" AI ", "Artificial Intelligence", " AI", "AI "])
+    searcher.save_results(combined_df, "collapse_and_GCR_research.csv", exclude_words=[" AI ", "Artificial Intelligence", " AI", "AI "])
