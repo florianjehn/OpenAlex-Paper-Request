@@ -414,9 +414,12 @@ if __name__ == "__main__":
 
 
     ]
-    
+    # read file email.txt and extract the email address
+    with open("email.txt", "r") as file:
+        email = file.read().strip()
+
     # Initialize the searcher with your email for the polite pool
-    searcher = OpenAlexSearch(email="xtzbo96mr@mozmail.com")
+    searcher = OpenAlexSearch(email=email)
     
     start_date = "2024-10-01"
     end_date = "2024-12-01"
