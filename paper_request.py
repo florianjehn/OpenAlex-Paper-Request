@@ -402,6 +402,8 @@ if __name__ == "__main__":
         "Military and defense studies",
         "Military history and strategy",
         "Political conflict and governance",
+        "Complex Systems and Time Series Analysis",
+        "Supply Chain Resilience and Risk Management",
     ]
     
     # Define your keywords of interest
@@ -411,6 +413,8 @@ if __name__ == "__main__":
         "civilization collapse",
         "societal collapse",
         "historical collapse",
+        "Risk Governance",
+        "systematic risk",
 
 
     ]
