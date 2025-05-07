@@ -402,7 +402,7 @@ if __name__ == "__main__":
         "Military and defense studies",
         "Military history and strategy",
         "Political conflict and governance",
-      #  "Complex Systems and Time Series Analysis",
+        "Complex Systems and Time Series Analysis",
         "Supply Chain Resilience and Risk Management",
     ]
     
@@ -413,7 +413,7 @@ if __name__ == "__main__":
         "civilization collapse",
         "societal collapse",
         "historical collapse",
-        "systematic risk",
+       # "systematic risk",
 
 
     ]
