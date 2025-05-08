@@ -413,6 +413,7 @@ if __name__ == "__main__":
         "civilization collapse",
         "societal collapse",
         "historical collapse",
+       # "Geopolitics",
        # "systematic risk",
 
 
