@@ -425,8 +425,8 @@ if __name__ == "__main__":
     # Initialize the searcher with your email for the polite pool
     searcher = OpenAlexSearch(email=email)
     
-    start_date = "2025-04-01"
-    end_date = "2025-05-01"
+    start_date = "2025-05-01"
+    end_date = "2025-05-28"
 
     # Search for documents by topic
     topic_results = searcher.search_topics(
