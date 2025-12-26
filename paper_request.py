@@ -233,12 +233,15 @@ class OpenAlexSearch:
         metadata = []
         
         for doc in documents:
+            # Only include docs with a doi
+            if doc.get('doi') is None:
+                continue
             # Extract basic metadata
             item = {
                 'id': doc.get('id', ''),
                 'title': doc.get('title', ''),
                 'publication_date': doc.get('publication_date', ''),
-                'doi': doc.get('doi', ''),
+                'doi': doc.get('doi', '')+" ",
                 'type': doc.get('type', ''),
                 'cited_by_count': doc.get('cited_by_count', 0),
             }
@@ -254,11 +257,12 @@ class OpenAlexSearch:
             if 'authorships' in doc and doc['authorships']:
                 authors = [a.get('author', {}).get('display_name', '') for a in doc['authorships'] if 'author' in a]
                 item['authors'] = '; '.join(authors)
-                
+              
                 # Extract affiliations from first author
                 if doc['authorships'][0].get('institutions'):
                     affiliations = [i.get('display_name', '') for i in doc['authorships'][0].get('institutions', [])]
-                    item['first_author_affiliations'] = '; '.join(affiliations)
+                    if affiliations[0] is not None:
+                        item['first_author_affiliations'] = '; '.join(affiliations)
                 else:
                     item['first_author_affiliations'] = ''
             else:
@@ -425,8 +429,8 @@ if __name__ == "__main__":
     # Initialize the searcher with your email for the polite pool
     searcher = OpenAlexSearch(email=email)
     
-    start_date = "2025-05-28"
-    end_date = "2025-06-28"
+    start_date = "2025-11-26"
+    end_date = "2025-12-26"
 
     # Search for documents by topic
     topic_results = searcher.search_topics(
