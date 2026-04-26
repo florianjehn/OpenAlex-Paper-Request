@@ -375,7 +375,7 @@ def filter_dataframe(df, words_to_exclude):
     
     # Create a boolean mask for rows to keep
     # A row is kept if its title doesn't contain any of the words to exclude
-    mask = ~lowercase_titles.apply(lambda title: any(word in title for word in lowercase_words))
+    mask = ~lowercase_titles.apply(lambda title: any(word in title for word in lowercase_words) if title is not None else False)
     
     # Return the filtered DataFrame
     return filtered_df[mask]
@@ -429,8 +429,8 @@ if __name__ == "__main__":
     # Initialize the searcher with your email for the polite pool
     searcher = OpenAlexSearch(email=email)
     
-    start_date = "2026-02-23"
-    end_date = "2026-03-25"
+    start_date = "2026-03-26"
+    end_date = "2026-04-26"
 
     # Search for documents by topic
     topic_results = searcher.search_topics(
