@@ -328,8 +328,17 @@ class OpenAlexSearch:
 
         # If exclude_words != None remove all documents which have any of the excluded words in their title
         if exclude_words is not None:
-            df = filter_dataframe(df, exclude_words)                
-        
+            df = filter_dataframe(df, exclude_words)
+
+        # Remove duplicate titles (case-insensitive)
+        before = len(df)
+        df['_title_lower'] = df['title'].str.lower().str.strip()
+        df = df.drop_duplicates(subset=['_title_lower']).drop(columns=['_title_lower'])
+        df = df.reset_index(drop=True)
+        removed = before - len(df)
+        if removed:
+            print(f"Removed {removed} duplicate title(s)")
+
         # Create directory if it doesn't exist
         os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
         
@@ -429,8 +438,8 @@ if __name__ == "__main__":
     # Initialize the searcher with your email for the polite pool
     searcher = OpenAlexSearch(email=email)
     
-    start_date = "2026-03-26"
-    end_date = "2026-04-26"
+    start_date = "2026-04-26"
+    end_date = "2026-05-26"
 
     # Search for documents by topic
     topic_results = searcher.search_topics(
